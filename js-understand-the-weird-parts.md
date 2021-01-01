@@ -4,6 +4,10 @@
 
 **_Execution Context_** : A wrapper to help manage the code that is running.
 
+**_Global Execution Context_**: global object(`window` is code is run in browser, global means not inside a function) + `this`.
+
+![](src/img/global_object.png)
+
 ---
 
 ### Hoisting
@@ -26,8 +30,10 @@ var a = "Hello World"; // variable declared by let or const will NOT hoist
 function b() {
   console.log("Called b!");
 }
+console.log(a);
 // Called b!
 // undefined
+// Hello World
 
 b();
 // function b will not be hoisted
@@ -79,7 +85,7 @@ foodThought();
 
 **_Synchronous_** : one at a time and in order.
 
-**_Variable Environment_**
+**_Variable Environment_**: where the variables live.
 
 ![](src/img/stack.png)
 
@@ -87,11 +93,11 @@ foodThought();
 
 ### Scope
 
-**_Scope_** : **Where a variable is available in your code** and if it is truly the same variable or a new copy.
+**_Scope_** : **Where an variable is available in your code** and if it is truly the same variable or a new copy.
 
 ### The Scope Chain
 
-- **Function b is lexically in Global context, although it is called in function a**
+- **Function b is lexically in Global Context, although it is called in function a**
 
 ```javascript
 function b() {
@@ -122,13 +128,26 @@ function a() {
 
 var myVar = 1;
 a();
+b(); // b is not defined
+
+function a() {
+  function b() {
+    console.log(myVar); // 1
+  }
+  b();
+}
+
+var myVar = 1;
+a();
 ```
 
 ![](src/img/scope_chain_2.png)
 
 ---
 
-**_Main Thread and Web API event_**
+## Asynchronously
+
+**_Main Thread and Web API event_**: js engine will not look at the event queue until the stack is empty.
 
 ```javascript
 function waitThreeSeconds() {
@@ -153,12 +172,14 @@ console.log("finished execution");
 
 ---
 
+### Dynamic vs Static Typing
+
 **_Primitive Type_** : A type of data that represents a signle value, not an object.
 
-Primitive:
+Primitive
 
-- undefined: represents lack of existence, should not set a variable to this by developer.
-- null: represents lack of existence, can set a variable to this by developer.
+- undefined: **represents lack of existence**, should not set a variable to this by developer.
+- null: **represents lack of existence**, can set a variable to this by developer.
 - boolean
 - number
 - string
@@ -168,7 +189,7 @@ Non-primitive
 
 - object: array and function are object
 
-**_Coercion_** :
+**_Coercion_** : convert a value from one type to another
 
 ```javascript
 Number(undefined); // NaN
@@ -194,15 +215,26 @@ false == {}; // false
 0 == []; // true
 0 == {}; // false
 0 == null; // false
+
+var a = 0;
+var b = false;
+a == b; // true
+a === b; // false
 ```
 
 ---
 
-### Object
+## Object
+
+Consists of Primitive /Object/Function.
 
 ```javascript
 var person = new Object();
 person["firstname"] = "Tony";
+
+var firstNameProperty = "firstname";
+console.log(person[firstNameProperty]);
+console.log(person.firstname);
 
 person.address = new Object();
 person.address.street = "street";
@@ -220,11 +252,17 @@ var person = {
 };
 ```
 
+### Namespace: a container for variables and functions
+
 #### JSON vs Javascript Literal
 
 JSON is more strict and requires quotes around the object's key.
 
-**_First Class Functions_** : everything you can do with other types, you can do with functions. Assign them to variables, pass them around and create them on the fly.
+---
+
+![](src/img/function1.png)
+
+**_First Class Functions_** : everything you can do with other types, you can do with functions. Assign them to variables, pass them around and create them on the fly. Function is a special type of object.
 
 ```javascript
 // Add a property to the greet function
@@ -237,33 +275,33 @@ console.log(greet.language);
 
 ### Function Expression and Statement
 
-**_Expression_** : A unit of code that results in a value. It does not have to save to a variable.
+**_Function Expression_** : `A unit of code that results in a value`. It does not have to save to a variable.
 
 ```javascript
 // expression
-var a = 3;
-1 + 2;
-a = { greeting: "Hi" };
+var a = 3; // return value is 3
+1 + 2; // return value is 3
+a = { greeting: "Hi" }; // return value is an object
 
-// create a function object and assign it to a variable
+// create a new function object and assign it to a variable
 var anonymousGreet = function () {
   console.log("Hi");
 };
-// this execution only works after the expression, if called before, it will say `undefined is not a function`
+// this execution only works `after` the expression, if called before, it will say `undefined is not a function`, hoisting will put anonymousGreet = undefined when context created.
 anonymousGreet();
 ```
 
 ![](src/img/function_expression.png)
 
-**_Statement_**
+**_Function Statement_**
 
 ```javascript
-// function statement: do not return a value
+// function statement: `if` is a statement: do not return a value
 if (a === 3) {
 }
 
-greet(); // will work if call before definition
-// statement - do not return a value, put a function in memory
+greet(); // this will work if call before definition
+// function statement - do not return a value until it runs. This only puts a function in memory
 function greet() {
   console.log("Hi");
 }
@@ -337,7 +375,6 @@ function change(number, string, obj1, obj2) {
 
 change(number, string, obj1, obj2);
 
-//Guess the outputs here before you run the code:
 console.log(number); // 100
 console.log(string); // Jay
 console.log(obj1.value); // a
@@ -346,19 +383,27 @@ console.log(obj2.value); // c
 
 By Value - primitives
 
-### Objects, Functions and 'this'
+## Objects, Functions and 'this'
 
 ```javascript
 function a() {
-  console.log(this);
+  console.log(this); // window object
+  this.newVar = "hello";
 }
-a(); // Window object
+a();
+console.log(newVar); // hello
+
+var b = function () {
+  console.log(this); // window object
+};
+b();
 
 var c = {
   name: "name",
   log: function () {
+    // this points to the object that contains the log function
     this.name = "updated name";
-    console.log(this); // {name: "updated name", log: ƒ}
+    console.log(this); // { name: "updated name", log: ƒ }
   },
 };
 c.log();
@@ -367,14 +412,14 @@ var c = {
   name: "name",
   log: function () {
     this.name = "updated name";
-    console.log(this); // {name: "updated name", log: ƒ}
+    console.log(this); // { name: "updated name", log: ƒ }
 
     var setName = function (newName) {
-      console.log(this); // Window
-      this.name = newName; // it will set name attribute in the GLOBAL context
+      console.log(this); // window object
+      this.name = newName; // seems like a bug, but it will set name attribute in the GLOBAL context
     };
     setName("updated again!");
-    console.log(this); // {name: "updated name", log: ƒ}
+    console.log(this); // { name: "updated name", log: ƒ }
   },
 };
 c.log();
@@ -382,15 +427,15 @@ c.log();
 var c = {
   name: "name",
   log: function () {
-    var self = this;
+    var self = this; // KEY!!!
     self.name = "updated name";
-    console.log(self); // {name: "updated name", log: ƒ}
+    console.log(self); // { name: "updated name", log: ƒ }
 
     var setName = function (newName) {
-      self.name = newName;
+      self.name = newName; // look up the scope chain
     };
     setName("updated again!");
-    console.log(self); // {name: "updated again!", log: ƒ}
+    console.log(self); // { name: "updated again!", log: ƒ }
   },
 };
 c.log();
@@ -399,13 +444,13 @@ var c = {
   name: "name",
   log: function () {
     this.name = "updated name";
-    console.log(this); // {name: "updated name", log: ƒ}
+    console.log(this); // { name: "updated name", log: ƒ }
 
     var setName = (newName) => {
       this.name = newName; // it will set name attribute in `this` context
     };
     setName("updated again!");
-    console.log(this); // {name: "updated again!", log: ƒ}
+    console.log(this); // { name: "updated again!", log: ƒ }
   },
 };
 c.log();
@@ -459,9 +504,8 @@ function (name) {
 // Typical IIFE
 (function (name) {
   var greeting = "Inside IIFE: hello";
-  console.log(greeting + " " + name);
+  console.log(greeting + " " + name); // // Inside IIFE: hello John
 })("John");
-// Inside IIFE: hello John
 ```
 
 ![](src/img/scope.png)
@@ -503,7 +547,7 @@ console.log(greeting);
 
 ---
 
-### Closures
+## Closures
 
 ```javascript
 function greet(whattosay) {
@@ -527,6 +571,9 @@ function buildFunction() {
   }
   return array;
 }
+// after the context is poped off from stack, i = 3, arr = [f0, f1, f2] is in closure.
+// when the functions are executed, i = 3
+
 var fs = buildFunction();
 fs[0](); // 3
 fs[1](); // 3
@@ -541,7 +588,7 @@ fs[2](); // 3
 function buildFunction() {
   var array = [];
   for (var i = 0; i < 3; i++) {
-    let j = i; // let defines block scope
+    let j = i; // `let` defines block scope
     array.push(function () {
       console.log(j);
     });
@@ -555,8 +602,8 @@ fs[2](); // 2
 
 function buildFunction() {
   var array = [];
+  // let instead of var
   for (let i = 0; i < 3; i++) {
-    // let defines block scope
     array.push(() => {
       // not matter arrow or regular function here
       console.log(i);
@@ -577,6 +624,7 @@ function buildFunction() {
   var array = [];
   for (var i = 0; i < 3; i++) {
     array.push(
+      // create another execution context. The IIFE returns a function.
       (function (j) {
         return function () {
           console.log(j);
@@ -640,7 +688,7 @@ greetSpanish("John", "Doe");
 
 ### Closures and Callbacks
 
-Closure will be included in callback function as well.
+Closure can be included in a callback function as well.
 
 ```javascript
 function sayHiLater() {
@@ -657,7 +705,7 @@ sayHiLater();
 
 ### Call()/Bind()/Apply()
 
-All function object has these 3 methods.
+All function objects have these 3 methods.
 
 ![](src/img/function.png)
 
@@ -684,25 +732,25 @@ logName.apply(person, ["en", "es"]);
 ```
 
 ```javascript
-function test(lang1, lang2) {
+function test() {
   console.log("Logged: " + this.getFullName());
-}.call(person); // call/bind not work - statement
+}.call(person); // not work - this is a function statement
 
-(function test(lang1, lang2) {
+(function test() {
   console.log("Logged: " + this.getFullName());
 }).call(person);
 // Logged: ziyi zhang
-// work - expression
+// work - this is a function expression
 
-(function (lang1, lang2) {
+(function () {
   console.log("Logged: " + this.getFullName());
 }).call(person);
 // Logged: ziyi zhang
-// work - expression
+// work - this is a function expression
 
 var test = function (lang1, lang2) {
   console.log("Logged: " + this.getFullName());
-}.bind(person); // work - expression
+}.bind(person); // work - this is a function expression
 test();
 ```
 
@@ -750,7 +798,9 @@ var array5 = mapForEach(array1, checkPastLimitSimplified(2));
 
 ---
 
-### Inheritance: one object gets access to the properties and methods of another object.
+## Inheritance
+
+One object gets access to the properties and methods of another object.
 
 **_Prototype_**
 ![](src/img/prototype_chain.png)
@@ -763,11 +813,11 @@ var person = {
     return this.firstname + " " + this.lastname;
   },
 };
+
 var john = {
   firstname: "John",
   lastname: "Doe",
 };
-
 john.__proto__ = person;
 console.log(john.getFullName()); // John Doe
 
@@ -793,7 +843,9 @@ var c = [];
 
 ---
 
-### Reflection: an object can look at itself, listing and changing its properties and methods
+## Reflection
+
+An object can look at itself, list and change its properties and methods
 
 ```javascript
 var person = {
@@ -830,7 +882,7 @@ for (var prop in john) {
 
 ---
 
-### Building Objects
+## Building Objects
 
 One way to create object:
 
@@ -853,6 +905,7 @@ function Person() {
   this.lastname = "Doe";
   // return `this`, by default
 }
+
 // 1. new key word creates a new object: {}
 // 2. then, it calls the constructor function, `this` will be pointed to the newly created object
 // 3. the function returns `this`
@@ -866,10 +919,10 @@ function Person(firstname, lastname) {
   this.lastname = lastname;
 }
 var jane = new Person("Jane", "Doe");
-console.log(jane);
+console.log(jane); // Person {firstname: "Jane", lastname: "Doe"}
 ```
 
-#### Function Constructor & its Prototype
+### Function Constructor & its Prototype
 
 ```javascript
 function Person(firstname, lastname) {
@@ -892,6 +945,7 @@ console.log(jane);
 //      constructor: ƒ Person(firstname, lastname)
 //      __proto__: Object
 
+// better to set method in prototype than function constructor, because here in prototype, you need only one copy - save memory space
 Person.prototype.getFormalFullName = function () {
   return this.lastname + " " + this.firstname;
 };
@@ -910,11 +964,12 @@ Number.prototype.isPositive = function () {
 var a = 3;
 a.isPositive(); // true
 
-var a = 3;
-var b = new Number(3);
+var a = 3; // primitive number
+var b = new Number(3); // object
 a == b; // true
 a === b; // false
 
+// arrays are objects
 var array = ["John", "Jane", "Jim"];
 for (var prop in array) {
   console.log(prop + ": " + array[prop]);
@@ -933,22 +988,22 @@ for (var prop in array) {
 // myCustomFeature: cool!
 ```
 
-!!! Do NOT use `var ... in`, use for(var i = 0; i < array.length; i++) {}
+!!! DO NOT use `var ... in`, use for(var i = 0; i < array.length; i++) {}
 
 ### Object.create and Pure Prototypal Inheritance
 
 ```javascript
-// Object does not create new execution context, `this` is required since firstname is not within the function, and it will look for it in GLOBAL context, which is undefined.
+// Object(like person below) does not create new execution context, `this` is required since firstname is not within the function, and it will look for it in GLOBAL context, which is undefined.
 var person = {
   firstname: "Default",
   lastname: "Default",
   greet: function () {
-    return "Hi " + this.firstname;
+    return "Hi " + this.firstname; // `this` is required.
   },
 };
 
 // Pure Prototypal Inheritance
-// Object.create(person) create an empty object, the proto is person object
+// Object.create(person) create an empty object, the proto points to the person object
 var john = Object.create(person);
 console.log(john);
 // {}
@@ -958,6 +1013,7 @@ console.log(john);
 //      lastname: "Default"
 //      __proto__: Object
 
+// override the property
 john.firstname = "John";
 john.lastname = "Doe";
 console.log(john);
@@ -989,6 +1045,7 @@ if (!Object.create) {
     return new F();
   };
 }
+
 // function has 'prototype' key
 // object has '__proto__' key
 function F() {}
@@ -1002,22 +1059,23 @@ new F();
 //      __proto__: Object
 ```
 
-### Class
+## Class
 
 **_Syntactic Sugar_**: A different way to type something that does not change how it works under the hood.
 
 ```javascript
 class Person {
+  // constructor
   constructor(firstname, lastname) {
     this.firstname = firstname;
     this.lastname = lastname;
   }
 
   greet() {
-    return "Hi" + firstname;
+    return "Hi " + firstname;
   }
 }
-// The class Person is a function
+// The class Person itself is a `function`
 // typeof Person - function
 
 var john = new Person("John", "Doe");
@@ -1032,7 +1090,7 @@ var john = new Person("John", "Doe");
 
 **_Set the prototype using *extends*_**
 
-`extends` will set the prototype of the class(indeed it is a function)
+`extends` will set the prototype of the object(indeed it is a function)
 
 ```javascript
 class InformalPerson extends Person {
@@ -1045,7 +1103,7 @@ class InformalPerson extends Person {
 }
 ```
 
-### typeof and instanceof
+## typeof and instanceof
 
 ```javascript
 var a = 3;

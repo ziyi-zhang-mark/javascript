@@ -1,4 +1,4 @@
-Javascript Engine
+## Javascript Engine
 
 ![](src/advanced/img/js_engine.png)
 
@@ -25,23 +25,22 @@ Memory Leak
 
 ```javascript
 let array = [];
-for (let i = 5; i > 1; i++) {
+for (let i = 5; i > 1; i++) { // the loop never ends
   array.push(i - 1);
 }
 
 // 容易造成 memory leak 的几点
-// global variable
+// global variable in global scope
 var a = 1;
 var b = 1;
-var c = 1;
 
 // event listeners
 var element = document.getElementById("button");
-element.addEventListener("click", onClick);
+element.addEventListener("click", onClick); // keep adding but never removed
 
 // setInterval
 setInterval(() => {
-  // referencing objects... will never be collected by GC
+  // referencing objects... will never be collected by GC until setInterval() gets cancelled
 });
 ```
 
